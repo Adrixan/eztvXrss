@@ -53,6 +53,10 @@
   - **Velocity**: 4 story points.
   - **Test Suite**: 39 unit & integration tests, 429 assertions, 100% green.
   - **Deployment**: Live on `code-alongsi.de:httpdocs/eztvxrss`. Verified via curl and Puppeteer.
+  - **Retrospective**:
+    - *What went well*: Fast root cause analysis for sanitizer stripping of `magnet:` schemes and browser 302 aborts; TDD ensured zero regressions across all iterations; visual verification via Puppeteer ensured dark mode and clipboard functionality behaved as expected.
+    - *What to improve*: Pre-emptively account for headless/web-only RSS clients that lack desktop protocol handlers.
+    - *Action items*: Complete all tasks, synchronize state, push clean tree.
 
 ## Skipped Tests Log
 - None.

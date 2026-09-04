@@ -18,6 +18,7 @@
 - [x] Implementation complete (plain text in description + 200 landing page with clipboard button)
 - [x] Regression suite green (39 tests, 429 assertions)
 - [x] Production deployment & verification on code-alongsi.de
-- [x] User review: ready for acceptance
+- [x] User review: approved
+
 
 

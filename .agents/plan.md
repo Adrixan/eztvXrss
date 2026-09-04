@@ -29,8 +29,8 @@
   5. Inside `<description>` CDATA, the magnet link href uses raw `&` parameter delimiters (not double-escaped `&amp;`), plus a direct link to the EZTV episode page.
   6. Unit and integration tests verify all link elements and magnet URI format.
 
-#### US-10: Plaintext Magnet URI in Feed Descriptions & Clipboard Landing Page (In Progress)
-- **Status**: In Progress
+#### US-10: Plaintext Magnet URI in Feed Descriptions & Clipboard Landing Page (Done)
+- **Status**: Completed
 - **Story**: As a user without a desktop BitTorrent client, I want the magnet link displayed as plain text in the feed item description and a landing page with a "Copy Magnet URL to Clipboard" button, so that I never get a blank screen and can easily copy and paste the magnet URI into web-based torrent clients.
 - **Priority**: Must
 - **Estimate**: 2 story points
