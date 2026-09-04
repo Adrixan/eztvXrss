@@ -85,7 +85,26 @@ final class RssFeedBuilderTest extends TestCase
         $desc = $firstItem->getElementsByTagName('description')->item(0)?->nodeValue ?? '';
         $this->assertStringContainsString('https://eztvx.to/ep/', $desc);
         $this->assertMatchesRegularExpression('/href="https:\/\/[^"]+\/magnet\.php\?url=magnet%3A%3F[^"]+"/', $desc, 'Magnet href in CDATA must use HTTPS magnet proxy URL so feed sanitizers do not strip it');
+        $firstItemMagnet = $this->items[0]->magnetUrl;
+        $this->assertStringContainsString('<strong>Magnet URI:</strong>', $desc);
+        $this->assertStringContainsString(htmlspecialchars($firstItemMagnet, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'), $desc, 'Plain text magnet in HTML description must use single HTML entity escaping');
+
+        // Verify that when an HTML parser processes the description, textContent produces the exact raw magnet URI
+        $htmlDoc = new DOMDocument();
+        $htmlDoc->loadHTML('<div>' . $desc . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        $codeNodes = $htmlDoc->getElementsByTagName('code');
+        $foundMagnetInCode = false;
+        foreach ($codeNodes as $code) {
+            if (str_starts_with($code->nodeValue, 'magnet:?xt=')) {
+                $foundMagnetInCode = true;
+                $this->assertSame($firstItemMagnet, $code->nodeValue, 'Decoded nodeValue must match exact raw magnet URL');
+                $this->assertStringNotContainsString('&amp;', $code->nodeValue, 'Decoded nodeValue must not have literal &amp;');
+                break;
+            }
+        }
+        $this->assertTrue($foundMagnetInCode, 'Must find code element containing the raw decoded magnet URI');
     }
+
 
     public function testBuildEscapesXmlEntitiesInSpecialCharacters(): void
     {

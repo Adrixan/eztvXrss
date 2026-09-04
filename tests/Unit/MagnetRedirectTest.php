@@ -20,8 +20,11 @@ final class MagnetRedirectTest extends TestCase
 
         $result = shell_exec($cmd);
         $this->assertNotEmpty($result);
+        $this->assertStringContainsString('Copy Magnet URL to Clipboard', $result, 'Must render Copy Magnet URL to Clipboard button');
         $this->assertStringContainsString('Open Magnet in Client', $result);
         $this->assertStringContainsString('1ee025c9da782e6c916d80f4acb5e4b3c34bd863', $result);
+        $this->assertStringContainsString('navigator.clipboard.writeText', $result);
+        $this->assertStringNotContainsString('http-equiv="refresh"', $result, 'Must not use meta refresh which freezes on systems without desktop client');
     }
 
     public function testValidHashAndTitleGeneratesRedirect(): void
@@ -36,6 +39,7 @@ final class MagnetRedirectTest extends TestCase
 
         $result = shell_exec($cmd);
         $this->assertNotEmpty($result);
+        $this->assertStringContainsString('Copy Magnet URL to Clipboard', $result, 'Must render Copy Magnet URL to Clipboard button');
         $this->assertStringContainsString('Open Magnet in Client', $result);
         $this->assertStringContainsString('1ee025c9da782e6c916d80f4acb5e4b3c34bd863', $result);
     }

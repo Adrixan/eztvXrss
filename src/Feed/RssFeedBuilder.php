@@ -97,14 +97,15 @@ final readonly class RssFeedBuilder
             $httpMagnetUrl = $magnetBase . '?url=' . rawurlencode($item->magnetUrl);
             $safeEztvHref = str_replace('"', '%22', $item->eztvUrl());
             $desc = sprintf(
-                '<p><strong>Release:</strong> %s</p><p><strong>Size:</strong> %s</p><p><strong>Seeds:</strong> %d | <strong>Peers:</strong> %d</p><p><strong>Hash:</strong> <code>%s</code></p><p><a href="%s">Magnet Link</a> | <a href="%s">View on EZTV</a></p>',
+                '<p><strong>Release:</strong> %s</p><p><strong>Size:</strong> %s</p><p><strong>Seeds:</strong> %d | <strong>Peers:</strong> %d</p><p><strong>Hash:</strong> <code>%s</code></p><p><a href="%s">Magnet Link</a> | <a href="%s">View on EZTV</a></p><p><strong>Magnet URI:</strong><br/><code style="word-break: break-all; user-select: all;">%s</code></p>',
                 htmlspecialchars($item->title, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
                 htmlspecialchars($item->formattedSize(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
                 $item->seeds,
                 $item->peers,
                 htmlspecialchars($item->hash, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
                 htmlspecialchars($httpMagnetUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
-                htmlspecialchars($safeEztvHref, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
+                htmlspecialchars($safeEztvHref, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+                htmlspecialchars($item->magnetUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
             );
             $writer->startElement('description');
             $writer->writeCdata($desc);

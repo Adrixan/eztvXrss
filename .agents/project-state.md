@@ -48,10 +48,10 @@
   - **Test Suite**: 31 unit & integration tests, 394 assertions, 100% green.
   - **Deployment**: Live on `code-alongsi.de:httpdocs/eztvxrss`. Tested and verified via curl and Puppeteer.
 - **Sprint 3 (2026-09-04)**:
-  - **Goal**: Fix RSS item links to point to canonical EZTV episode URLs, ensure magnet links are raw/unescaped (US-09), and clean up presets.
-  - **Delivered**: US-09 (2 story points), HTTPS magnet proxy endpoint (`magnet.php`), and removal of the "Star Trek Strange New Worlds" preset button.
-  - **Velocity**: 2 story points.
-  - **Test Suite**: 39 unit & integration tests, 420 assertions, 100% green.
+  - **Goal**: Fix RSS item links to canonical EZTV episode URLs, ensure magnet links are raw/unescaped (US-09), clean presets, and provide plaintext magnet URIs & copy landing page (US-10).
+  - **Delivered**: US-09 (2 story points), US-10 (2 story points), removal of the "Star Trek Strange New Worlds" preset button.
+  - **Velocity**: 4 story points.
+  - **Test Suite**: 39 unit & integration tests, 429 assertions, 100% green.
   - **Deployment**: Live on `code-alongsi.de:httpdocs/eztvxrss`. Verified via curl and Puppeteer.
 
 ## Skipped Tests Log
