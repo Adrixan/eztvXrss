@@ -100,4 +100,26 @@ final class EndpointIntegrationTest extends TestCase
         $this->assertNotNull($outline);
         $this->assertSame('Star Trek: Strange New Worlds [1080p | HEVC x265]', $outline->getAttribute('text'));
     }
+
+    public function testIndexPhpDoesNotContainStrangeNewWorldsPreset(): void
+    {
+        $cmd = sprintf(
+            'php -r %s',
+            escapeshellarg('
+                $_SERVER["HTTPS"] = "on";
+                $_SERVER["HTTP_HOST"] = "code-alongsi.de";
+                $_SERVER["SCRIPT_NAME"] = "/eztvxrss/index.php";
+                ob_start();
+                require __DIR__ . "/index.php";
+                $output = ob_get_clean();
+                echo $output;
+            ')
+        );
+
+        $output = shell_exec($cmd);
+        $this->assertNotEmpty($output);
+        $this->assertStringNotContainsString('preset-strange-new-worlds', $output);
+        $this->assertStringNotContainsString('Star Trek Strange New Worlds (12327578)', $output);
+    }
 }
+

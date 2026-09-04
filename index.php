@@ -89,9 +89,6 @@ $initialSource = htmlspecialchars((string) ($_GET['source'] ?? 'any'), ENT_QUOTE
             <!-- Presets -->
             <div class="presets-container" aria-label="Quick Presets">
               <span class="presets-label">Presets:</span>
-              <button type="button" class="btn btn-secondary btn-preset" id="preset-strange-new-worlds" data-imdb="12327578">
-                Star Trek Strange New Worlds (12327578)
-              </button>
               <button type="button" class="btn btn-secondary btn-preset" id="preset-1080p-hevc">
                 1080p + HEVC x265
               </button>
@@ -401,15 +398,6 @@ $initialSource = htmlspecialchars((string) ($_GET['source'] ?? 'any'), ENT_QUOTE
       }
 
       // Presets
-      document.getElementById('preset-strange-new-worlds').addEventListener('click', () => {
-        imdbInput.value = '12327578';
-        currentShowName = 'Star Trek: Strange New Worlds';
-        lastLookedUpImdb = '12327578';
-        imdbLookupStatus.innerHTML = '<span class="badge badge-success">✓ Star Trek: Strange New Worlds</span>';
-        generateUrl();
-        loadPreview();
-      });
-
       document.getElementById('preset-1080p-hevc').addEventListener('click', () => {
         resolutionSelect.value = '1080p';
         codecSelect.value = 'x265';
