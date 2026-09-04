@@ -54,12 +54,33 @@ final class EndpointIntegrationTest extends TestCase
         $this->assertArrayHasKey('results', $data);
     }
 
+    public function testApiScriptLookupReturnsShowName(): void
+    {
+        $cmd = sprintf(
+            'php -r %s',
+            escapeshellarg('
+                $_GET = ["action" => "lookup", "imdb" => "12327578"];
+                ob_start();
+                require __DIR__ . "/api.php";
+                $output = ob_get_clean();
+                echo $output;
+            ')
+        );
+
+        $output = shell_exec($cmd);
+        $this->assertNotEmpty($output);
+        $data = json_decode($output, true);
+        $this->assertIsArray($data);
+        $this->assertTrue($data['success'] ?? false);
+        $this->assertSame('Star Trek: Strange New Worlds', $data['name']);
+    }
+
     public function testOpmlScriptOutputsValidXml(): void
     {
         $cmd = sprintf(
             'php -r %s',
             escapeshellarg('
-                $_GET = ["imdb" => "12327578", "resolution" => "1080p", "codec" => "x265", "show_title" => "Star Trek"];
+                $_GET = ["imdb" => "12327578", "resolution" => "1080p", "codec" => "x265", "show_title" => "Star Trek: Strange New Worlds"];
                 $_SERVER["HTTPS"] = "on";
                 $_SERVER["HTTP_HOST"] = "code-alongsi.de";
                 $_SERVER["SCRIPT_NAME"] = "/eztvxrss/opml.php";
@@ -75,5 +96,8 @@ final class EndpointIntegrationTest extends TestCase
         $dom = new DOMDocument();
         $this->assertTrue($dom->loadXML($output));
         $this->assertSame('opml', $dom->documentElement->nodeName);
+        $outline = $dom->getElementsByTagName('outline')->item(0);
+        $this->assertNotNull($outline);
+        $this->assertSame('Star Trek: Strange New Worlds [1080p | HEVC x265]', $outline->getAttribute('text'));
     }
 }

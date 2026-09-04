@@ -99,6 +99,7 @@ $initialSource = htmlspecialchars((string) ($_GET['source'] ?? 'any'), ENT_QUOTE
                 720p + x264
               </button>
             </div>
+            <div id="imdb-lookup-status" style="margin-top: 0.5rem; min-height: 24px;" aria-live="polite"></div>
           </div>
 
           <div class="form-grid">
@@ -167,6 +168,9 @@ $initialSource = htmlspecialchars((string) ($_GET['source'] ?? 'any'), ENT_QUOTE
           </svg>
           Generated RSS 2.0 Feed URL
         </h2>
+        <div id="feed-name-display" style="font-weight: 600; margin-bottom: 0.6rem; font-size: 1.05rem;">
+          Feed Name: <span id="feed-name-text" style="color: var(--primary-color);">Enter an IMDb ID</span>
+        </div>
         <div id="feed-url-display" class="feed-url-box" tabindex="0" role="textbox" aria-label="Generated RSS Feed URL">
           Enter an IMDb ID above to generate the feed URL.
         </div>
@@ -262,6 +266,8 @@ $initialSource = htmlspecialchars((string) ($_GET['source'] ?? 'any'), ENT_QUOTE
       const seasonInput = document.getElementById('season-input');
       const episodeInput = document.getElementById('episode-input');
 
+      const imdbLookupStatus = document.getElementById('imdb-lookup-status');
+      const feedNameText = document.getElementById('feed-name-text');
       const feedUrlDisplay = document.getElementById('feed-url-display');
       const btnCopyUrl = document.getElementById('btn-copy-url');
       const btnOpenFeed = document.getElementById('btn-open-feed');
@@ -277,6 +283,10 @@ $initialSource = htmlspecialchars((string) ($_GET['source'] ?? 'any'), ENT_QUOTE
       const btnSearchShow = document.getElementById('btn-search-show');
       const searchResultsContainer = document.getElementById('search-results-container');
 
+      let currentShowName = '';
+      let lastLookedUpImdb = '';
+      let lookupTimeout = null;
+
       function showToast(message) {
         toast.textContent = message;
         toast.style.display = 'block';
@@ -291,11 +301,31 @@ $initialSource = htmlspecialchars((string) ($_GET['source'] ?? 'any'), ENT_QUOTE
         return m ? m[1] : '';
       }
 
+      function formatFeedName(showName) {
+        if (!showName) return '';
+        const tags = [];
+        if (resolutionSelect.value !== 'any') tags.push(resolutionSelect.value);
+        if (codecSelect.value !== 'any') {
+          if (codecSelect.value === 'x265') tags.push('HEVC x265');
+          else if (codecSelect.value === 'x264') tags.push('x264');
+          else tags.push(codecSelect.value);
+        }
+        if (sourceSelect.value !== 'any') tags.push(sourceSelect.value);
+        if (seasonInput.value && parseInt(seasonInput.value, 10) > 0) {
+          tags.push('S' + String(seasonInput.value).padStart(2, '0'));
+        }
+        if (episodeInput.value && parseInt(episodeInput.value, 10) > 0) {
+          tags.push('E' + String(episodeInput.value).padStart(2, '0'));
+        }
+        return tags.length > 0 ? `${showName} [${tags.join(' | ')}]` : showName;
+      }
+
       function generateUrl() {
         const rawImdb = imdbInput.value;
         const imdb = cleanImdb(rawImdb);
 
         if (!imdb) {
+          feedNameText.textContent = 'Enter an IMDb ID';
           feedUrlDisplay.textContent = 'Enter an IMDb ID above to generate the feed URL.';
           btnOpenFeed.removeAttribute('href');
           btnExportOpml.removeAttribute('href');
@@ -304,6 +334,13 @@ $initialSource = htmlspecialchars((string) ($_GET['source'] ?? 'any'), ENT_QUOTE
 
         const params = new URLSearchParams();
         params.set('imdb', imdb);
+
+        if (currentShowName) {
+          feedNameText.textContent = formatFeedName(currentShowName);
+          params.set('title', currentShowName);
+        } else {
+          feedNameText.textContent = formatFeedName('Show') + ' (resolving name...)';
+        }
 
         if (resolutionSelect.value !== 'any') params.set('resolution', resolutionSelect.value);
         if (codecSelect.value !== 'any') params.set('codec', codecSelect.value);
@@ -326,9 +363,49 @@ $initialSource = htmlspecialchars((string) ($_GET['source'] ?? 'any'), ENT_QUOTE
         return finalUrl;
       }
 
+      function triggerLookup() {
+        const rawImdb = imdbInput.value;
+        const imdb = cleanImdb(rawImdb);
+        if (!imdb) {
+          currentShowName = '';
+          lastLookedUpImdb = '';
+          imdbLookupStatus.innerHTML = '';
+          generateUrl();
+          return;
+        }
+
+        if (imdb === lastLookedUpImdb && currentShowName) {
+          return;
+        }
+
+        imdbLookupStatus.innerHTML = '<span style="color: var(--text-muted); font-size: 0.85rem;">Looking up show name...</span>';
+
+        fetch(apiBase + '?action=lookup&imdb=' + encodeURIComponent(imdb))
+          .then(res => res.json())
+          .then(data => {
+            if (data.name) {
+              currentShowName = data.name;
+              lastLookedUpImdb = imdb;
+              imdbLookupStatus.innerHTML = '<span class="badge badge-success">✓ ' + data.name + '</span>';
+            } else {
+              currentShowName = '';
+              lastLookedUpImdb = imdb;
+              imdbLookupStatus.innerHTML = '<span style="color: var(--text-muted); font-size: 0.85rem;">Show name will be parsed from release title</span>';
+            }
+            generateUrl();
+          })
+          .catch(() => {
+            imdbLookupStatus.innerHTML = '';
+            generateUrl();
+          });
+      }
+
       // Presets
       document.getElementById('preset-strange-new-worlds').addEventListener('click', () => {
         imdbInput.value = '12327578';
+        currentShowName = 'Star Trek: Strange New Worlds';
+        lastLookedUpImdb = '12327578';
+        imdbLookupStatus.innerHTML = '<span class="badge badge-success">✓ Star Trek: Strange New Worlds</span>';
         generateUrl();
         loadPreview();
       });
@@ -348,10 +425,18 @@ $initialSource = htmlspecialchars((string) ($_GET['source'] ?? 'any'), ENT_QUOTE
       });
 
       // Inputs change listener
-      [imdbInput, resolutionSelect, codecSelect, sourceSelect, minSeedsInput, seasonInput, episodeInput].forEach(el => {
+      [resolutionSelect, codecSelect, sourceSelect, minSeedsInput, seasonInput, episodeInput].forEach(el => {
         el.addEventListener('input', generateUrl);
         el.addEventListener('change', generateUrl);
       });
+
+      imdbInput.addEventListener('input', () => {
+        generateUrl();
+        clearTimeout(lookupTimeout);
+        lookupTimeout = setTimeout(triggerLookup, 500);
+      });
+
+      imdbInput.addEventListener('blur', triggerLookup);
 
       // Copy to Clipboard
       btnCopyUrl.addEventListener('click', () => {
@@ -405,6 +490,9 @@ $initialSource = htmlspecialchars((string) ($_GET['source'] ?? 'any'), ENT_QUOTE
 
               const selectShow = () => {
                 imdbInput.value = show.imdb_id;
+                currentShowName = show.name;
+                lastLookedUpImdb = show.imdb_id;
+                imdbLookupStatus.innerHTML = '<span class="badge badge-success">✓ ' + show.name + '</span>';
                 generateUrl();
                 loadPreview();
                 showToast(`Selected "${show.name}" (IMDb: ${show.imdb_id})`);

@@ -8,12 +8,40 @@ use RuntimeException;
 
 final class ShowSearchClient
 {
-    private const string BASE_URL = 'https://api.tvmaze.com/search/shows';
+    private const string BASE_SEARCH_URL = 'https://api.tvmaze.com/search/shows';
+    private const string BASE_LOOKUP_URL = 'https://api.tvmaze.com/lookup/shows';
 
     public function __construct(
         private ?HttpClientInterface $httpClient = null
     ) {
         $this->httpClient ??= new CurlHttpClient();
+    }
+
+    /**
+     * Lookup show title by IMDb ID (e.g. '12327578' or 'tt12327578')
+     */
+    public function lookupByImdbId(string $imdbId): ?string
+    {
+        $trimmed = trim($imdbId);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        $code = str_starts_with(strtolower($trimmed), 'tt') ? $trimmed : 'tt' . $trimmed;
+        $url = self::BASE_LOOKUP_URL . '?imdb=' . urlencode($code);
+
+        try {
+            $json = $this->httpClient->get($url);
+        } catch (RuntimeException) {
+            return null;
+        }
+
+        $data = json_decode($json, true);
+        if (!is_array($data) || empty($data['name'])) {
+            return null;
+        }
+
+        return (string) $data['name'];
     }
 
     /**
@@ -36,7 +64,7 @@ final class ShowSearchClient
             return [];
         }
 
-        $url = self::BASE_URL . '?q=' . urlencode($trimmed);
+        $url = self::BASE_SEARCH_URL . '?q=' . urlencode($trimmed);
 
         try {
             $json = $this->httpClient->get($url);

@@ -8,7 +8,10 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
     require_once __DIR__ . '/src/autoload.php';
 }
 
+use EztvXrss\Client\ShowSearchClient;
+use EztvXrss\Feed\FeedTitleFormatter;
 use EztvXrss\Feed\OpmlBuilder;
+use EztvXrss\Filter\FilterCriteria;
 
 header('Content-Type: text/x-opml+xml; charset=utf-8');
 header('Content-Disposition: attachment; filename="eztv-feeds.opml"');
@@ -33,10 +36,14 @@ try {
         $query = http_build_query($_GET);
         $feedUrl = $scheme . '://' . $host . $path . '?' . $query;
 
-        $title = 'Show Feed (IMDb: ' . htmlspecialchars((string) $_GET['imdb']) . ')';
-        if (!empty($_GET['show_title'])) {
-            $title = (string) $_GET['show_title'];
+        $criteria = FilterCriteria::fromArray($_GET);
+        $showName = trim((string) ($_GET['show_title'] ?? $_GET['title'] ?? ''));
+        if ($showName === '') {
+            $searchClient = new ShowSearchClient();
+            $showName = $searchClient->lookupByImdbId((string) $_GET['imdb']) ?? ('IMDb tt' . $_GET['imdb']);
         }
+
+        $title = FeedTitleFormatter::format($showName, $criteria);
 
         $feedList[] = [
             'title' => $title,

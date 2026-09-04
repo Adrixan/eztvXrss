@@ -32,6 +32,21 @@ try {
             echo json_encode(['results' => $shows]);
             break;
 
+        case 'lookup':
+            $rawImdb = (string) ($_GET['imdb'] ?? $_GET['imdb_id'] ?? '');
+            if (trim($rawImdb) === '') {
+                throw new InvalidArgumentException('IMDb ID is required.');
+            }
+            $normalizedImdb = EztvApiClient::normalizeImdbId($rawImdb);
+            $searchClient = new ShowSearchClient();
+            $name = $searchClient->lookupByImdbId($normalizedImdb);
+            echo json_encode([
+                'success' => true,
+                'imdb_id' => $normalizedImdb,
+                'name' => $name,
+            ]);
+            break;
+
         case 'preview':
             $rawImdb = (string) ($_GET['imdb'] ?? $_GET['imdb_id'] ?? '');
             if (trim($rawImdb) === '') {

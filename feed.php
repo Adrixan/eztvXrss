@@ -10,8 +10,10 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 }
 
 use EztvXrss\Client\EztvApiClient;
+use EztvXrss\Client\ShowSearchClient;
 use EztvXrss\Filter\FilterCriteria;
 use EztvXrss\Filter\TorrentFilter;
+use EztvXrss\Feed\FeedTitleFormatter;
 use EztvXrss\Feed\RssFeedBuilder;
 
 // Mandatory No-Cache headers: Fresh fetch on each reader poll
@@ -38,26 +40,17 @@ try {
     $filter = new TorrentFilter();
     $filteredTorrents = $filter->filter($torrents, $criteria);
 
-    // Build human-readable channel title with active filters
-    $filterDescriptions = [];
-    if ($criteria->resolution !== 'any') {
-        $filterDescriptions[] = $criteria->resolution;
+    // Resolve show name: parameter override -> TV lookup -> release parse -> IMDb fallback
+    $showName = trim((string) ($_GET['title'] ?? $_GET['show_title'] ?? ''));
+    if ($showName === '') {
+        $searchClient = new ShowSearchClient();
+        $showName = $searchClient->lookupByImdbId($normalizedImdb) ?? '';
     }
-    if ($criteria->codec !== 'any') {
-        $filterDescriptions[] = $criteria->codec;
-    }
-    if ($criteria->source !== 'any') {
-        $filterDescriptions[] = $criteria->source;
-    }
-    if ($criteria->season !== null) {
-        $filterDescriptions[] = 'S' . str_pad((string) $criteria->season, 2, '0', STR_PAD_LEFT);
-    }
-    if ($criteria->episode !== null) {
-        $filterDescriptions[] = 'E' . str_pad((string) $criteria->episode, 2, '0', STR_PAD_LEFT);
+    if ($showName === '') {
+        $showName = FeedTitleFormatter::extractShowTitleFromTorrents($torrents) ?? ('IMDb tt' . $normalizedImdb);
     }
 
-    $filterSuffix = !empty($filterDescriptions) ? ' [' . implode(' | ', $filterDescriptions) . ']' : '';
-    $channelTitle = 'EZTV RSS: IMDb tt' . $normalizedImdb . $filterSuffix;
+    $channelTitle = FeedTitleFormatter::format($showName, $criteria);
 
     // Determine current URL for self link
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';

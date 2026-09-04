@@ -22,3 +22,12 @@
 **Why:** User chose system-preference detection. Zero client JavaScript needed for theming, optimal performance, WCAG 2.1 AA compliant contrast in both light and dark modes.
 **Trade-offs:** User cannot override theme independently of OS theme without a manual toggle.
 **Revisit if:** User requests a manual toggle button.
+
+## 2026-09-04 — Feed Title Naming & IMDb Show Name Resolution
+**Chosen:** Format channel titles as `<Show Name> [<Resolution> | <Format>]` (e.g. `Star Trek: Strange New Worlds [1080p | HEVC x265]`). If only resolution or only format is selected, include only that tag in square brackets. If neither is selected, omit the brackets. When an IMDb ID is entered directly, resolve the show title via TVMaze lookup (`/lookup/shows?imdb=tt...`), with fallback to parsing the show title from the release strings, and final fallback to `IMDb tt<id>`.
+**Alternatives:**
+1. Only parse show name from release title: May result in formatting quirks like dots (`Star.Trek.Strange.New.Worlds`).
+2. Require user to enter show title manually: Worse user experience when entering an IMDb ID.
+**Why:** TVMaze lookup gives the clean, canonical show name with punctuation (`Star Trek: Strange New Worlds`), while release string parsing guarantees a reliable offline/fallback title even if TVMaze is unreachable.
+**Trade-offs:** Adds one lightweight HTTP call during feed generation if show title is not supplied via parameter.
+**Revisit if:** Latency of show lookup impacts feed generation speed.

@@ -87,4 +87,32 @@ final class ShowSearchClientTest extends TestCase
         $this->assertSame('Show With IMDb', $results[0]['name']);
         $this->assertSame('9876543', $results[0]['imdb_id']);
     }
+
+    public function testLookupByImdbIdReturnsShowName(): void
+    {
+        $mockHttpClient = $this->createMock(HttpClientInterface::class);
+        $mockHttpClient->expects($this->once())
+            ->method('get')
+            ->with($this->stringContains('api.tvmaze.com/lookup/shows?imdb=tt12327578'))
+            ->willReturn(json_encode([
+                'id' => 48090,
+                'name' => 'Star Trek: Strange New Worlds',
+            ]));
+
+        $client = new ShowSearchClient($mockHttpClient);
+        $name = $client->lookupByImdbId('12327578');
+
+        $this->assertSame('Star Trek: Strange New Worlds', $name);
+    }
+
+    public function testLookupByImdbIdReturnsNullOnError(): void
+    {
+        $mockHttpClient = $this->createMock(HttpClientInterface::class);
+        $mockHttpClient->method('get')->willThrowException(new \RuntimeException('Not found'));
+
+        $client = new ShowSearchClient($mockHttpClient);
+        $name = $client->lookupByImdbId('99999999');
+
+        $this->assertNull($name);
+    }
 }

@@ -22,11 +22,12 @@
 ## Architecture & Tech Stack
 - **Architecture**: Modular OOP PHP (native standard library) with PSR-4 autoloading and standalone fallback autoloader
   - `EztvApiClient`: Interfaces with `https://eztvx.to/api/get-torrents`, handles pagination and error responses
-  - `ShowSearchClient`: Searches shows via open TVMaze API and resolves IMDb IDs
+  - `ShowSearchClient`: Searches shows and looks up canonical titles by IMDb ID
   - `TorrentFilter`: Resolves resolution (2160p, 1080p, 720p, 480p), codecs (HEVC/x265, H.264/x264, XviD), source types, seasons/episodes
+  - `FeedTitleFormatter`: Formats feed channel titles and OPML outlines as `<Show Name> [Resolution | Format]` with release title fallback
   - `RssFeedBuilder`: Generates RSS 2.0 XML with BitTorrent magnet enclosures, RFC 2822 dates from `date_released_unix`, TTL/Syndication hints
   - `OpmlBuilder`: Generates OPML 2.0 XML for one-click import into RSS readers
-  - `WebFrontend`: Semantic HTML5 UI, responsive CSS with system dark mode, drop-downs for filters, instant feed URL generator & live preview table
+  - `WebFrontend`: Semantic HTML5 UI, responsive CSS with system dark mode, drop-downs for filters, instant feed URL generator, real-time IMDb show lookup & live preview table
 - **Dependencies**: PHP 8.4+ standard library (`ext-curl`, `ext-json`, `ext-xmlwriter`, `ext-dom`), `phpunit/phpunit` (dev-only)
 - **Caching**: Explicitly disabled per requirements ("do not implement caching", fresh API query on feed fetch)
 
@@ -39,7 +40,13 @@
   - **Delivered**: US-01, US-02, US-03, US-04, US-05, US-06, US-07 (19 story points).
   - **Velocity**: 19 story points.
   - **Test Suite**: 22 unit & integration tests, 378 assertions, 100% green.
-  - **Deployment**: Live on `code-alongsi.de:httpdocs/eztvxrss`. Feeds A and B verified live.
+  - **Deployment**: Live on `code-alongsi.de:httpdocs/eztvxrss`.
+- **Sprint 2 (2026-09-04)**:
+  - **Goal**: Show-Name Feed Title & Direct IMDb Lookup (US-08).
+  - **Delivered**: US-08 (2 story points).
+  - **Velocity**: 2 story points.
+  - **Test Suite**: 31 unit & integration tests, 394 assertions, 100% green.
+  - **Deployment**: Live on `code-alongsi.de:httpdocs/eztvxrss`. Tested and verified via curl and Puppeteer.
 
 ## Skipped Tests Log
 - None.
