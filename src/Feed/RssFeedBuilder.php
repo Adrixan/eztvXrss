@@ -14,7 +14,8 @@ final readonly class RssFeedBuilder
         private string $channelLink = 'https://code-alongsi.de/eztvxrss/',
         private string $channelDescription = 'Custom filtered EZTV show RSS feed',
         private int $ttl = 60,
-        private string $language = 'en-us'
+        private string $language = 'en-us',
+        private ?string $magnetEndpoint = null
     ) {
     }
 
@@ -51,6 +52,19 @@ final readonly class RssFeedBuilder
         $writer->writeAttribute('type', 'application/rss+xml');
         $writer->endElement();
 
+        $magnetBase = $this->magnetEndpoint;
+        if ($magnetBase === null || $magnetBase === '') {
+            $parsed = parse_url($this->channelLink);
+            $scheme = $parsed['scheme'] ?? 'https';
+            $host = $parsed['host'] ?? 'code-alongsi.de';
+            $path = $parsed['path'] ?? '/eztvxrss/';
+            $baseDir = rtrim(dirname($path), '/');
+            if ($baseDir === '' || $baseDir === '.') {
+                $baseDir = '/eztvxrss';
+            }
+            $magnetBase = "{$scheme}://{$host}{$baseDir}/magnet.php";
+        }
+
         foreach ($items as $item) {
             $writer->startElement('item');
 
@@ -79,7 +93,8 @@ final readonly class RssFeedBuilder
             $writer->endElement();
 
             // Description summary
-            $safeMagnetHref = str_replace('"', '%22', $item->magnetUrl);
+            // Use HTTPS magnet proxy endpoint so feed sanitizers (Nextcloud News, HTMLPurifier, DOMPurify) do not strip the href
+            $httpMagnetUrl = $magnetBase . '?url=' . rawurlencode($item->magnetUrl);
             $safeEztvHref = str_replace('"', '%22', $item->eztvUrl());
             $desc = sprintf(
                 '<p><strong>Release:</strong> %s</p><p><strong>Size:</strong> %s</p><p><strong>Seeds:</strong> %d | <strong>Peers:</strong> %d</p><p><strong>Hash:</strong> <code>%s</code></p><p><a href="%s">Magnet Link</a> | <a href="%s">View on EZTV</a></p>',
@@ -88,8 +103,8 @@ final readonly class RssFeedBuilder
                 $item->seeds,
                 $item->peers,
                 htmlspecialchars($item->hash, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
-                $safeMagnetHref,
-                $safeEztvHref
+                htmlspecialchars($httpMagnetUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+                htmlspecialchars($safeEztvHref, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
             );
             $writer->startElement('description');
             $writer->writeCdata($desc);

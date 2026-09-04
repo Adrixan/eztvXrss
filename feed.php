@@ -58,6 +58,13 @@ try {
     $uri = $_SERVER['REQUEST_URI'] ?? '/eztvxrss/feed.php';
     $selfUrl = $scheme . '://' . $host . $uri;
 
+    $path = parse_url($uri, PHP_URL_PATH) ?? '/eztvxrss/feed.php';
+    $baseDir = rtrim(dirname($path), '/');
+    if ($baseDir === '' || $baseDir === '.') {
+        $baseDir = '/eztvxrss';
+    }
+    $magnetEndpoint = $scheme . '://' . $host . $baseDir . '/magnet.php';
+
     $builder = new RssFeedBuilder(
         channelTitle: $channelTitle,
         channelLink: $selfUrl,
@@ -66,7 +73,8 @@ try {
             $normalizedImdb,
             count($filteredTorrents)
         ),
-        ttl: 60
+        ttl: 60,
+        magnetEndpoint: $magnetEndpoint
     );
 
     echo $builder->build($filteredTorrents);

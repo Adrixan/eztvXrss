@@ -84,7 +84,7 @@ final class RssFeedBuilderTest extends TestCase
 
         $desc = $firstItem->getElementsByTagName('description')->item(0)?->nodeValue ?? '';
         $this->assertStringContainsString('https://eztvx.to/ep/', $desc);
-        $this->assertMatchesRegularExpression('/href="magnet:\?xt=[^"]+&dn=[^"]+"/', $desc, 'Magnet href in CDATA must use raw & parameter delimiters');
+        $this->assertMatchesRegularExpression('/href="https:\/\/[^"]+\/magnet\.php\?url=magnet%3A%3F[^"]+"/', $desc, 'Magnet href in CDATA must use HTTPS magnet proxy URL so feed sanitizers do not strip it');
     }
 
     public function testBuildEscapesXmlEntitiesInSpecialCharacters(): void
