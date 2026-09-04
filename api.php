@@ -73,6 +73,7 @@ try {
                     'peers' => $item->peers,
                     'released' => $item->formattedPubDate(),
                     'magnet' => $item->magnetUrl,
+                    'eztv_url' => $item->eztvUrl(),
                     'season' => $item->season,
                     'episode' => $item->episode,
                 ];

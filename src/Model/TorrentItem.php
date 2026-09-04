@@ -70,4 +70,14 @@ final readonly class TorrentItem
     {
         return gmdate(DATE_RFC2822, $this->dateReleasedUnix);
     }
+
+    /**
+     * Returns the direct eztvx.to episode/torrent page URL.
+     */
+    public function eztvUrl(): string
+    {
+        $cleanTitle = trim((string) preg_replace('/(?:\s*-\s*|\s+)?EZTV$/i', '', $this->title));
+        $slug = strtolower(trim((string) preg_replace('/[^a-zA-Z0-9]+/', '-', $cleanTitle), '-'));
+        return sprintf('https://eztvx.to/ep/%d/%s/', $this->id, $slug !== '' ? $slug : 'torrent');
+    }
 }

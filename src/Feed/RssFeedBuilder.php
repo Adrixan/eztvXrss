@@ -33,6 +33,7 @@ final readonly class RssFeedBuilder
         $writer->startElement('rss');
         $writer->writeAttribute('version', '2.0');
         $writer->writeAttribute('xmlns:atom', 'http://www.w3.org/2005/Atom');
+        $writer->writeAttribute('xmlns:torrent', 'http://xmlns.ezrss.it/0.1/');
 
         $writer->startElement('channel');
         $writer->writeElement('title', $this->channelTitle);
@@ -54,17 +55,21 @@ final readonly class RssFeedBuilder
             $writer->startElement('item');
 
             $writer->writeElement('title', $item->title);
-            $writer->writeElement('link', $item->magnetUrl);
+            $writer->writeElement('link', $item->eztvUrl());
 
             // GUID
-            $guid = $item->hash !== '' ? $item->hash : (string) $item->id;
             $writer->startElement('guid');
-            $writer->writeAttribute('isPermaLink', 'false');
-            $writer->text($guid);
+            $writer->writeAttribute('isPermaLink', 'true');
+            $writer->text($item->eztvUrl());
             $writer->endElement();
 
             // Publication date from unix release time
             $writer->writeElement('pubDate', $item->formattedPubDate());
+
+            // EZRSS BitTorrent Magnet URI element
+            $writer->startElement('torrent:magnetURI');
+            $writer->writeCdata($item->magnetUrl);
+            $writer->endElement();
 
             // BitTorrent Enclosure
             $writer->startElement('enclosure');
@@ -74,17 +79,20 @@ final readonly class RssFeedBuilder
             $writer->endElement();
 
             // Description summary
+            $safeMagnetHref = str_replace('"', '%22', $item->magnetUrl);
+            $safeEztvHref = str_replace('"', '%22', $item->eztvUrl());
             $desc = sprintf(
-                '<![CDATA[<p><strong>Release:</strong> %s</p><p><strong>Size:</strong> %s</p><p><strong>Seeds:</strong> %d | <strong>Peers:</strong> %d</p><p><strong>Hash:</strong> <code>%s</code></p><p><a href="%s">Magnet Link</a></p>]]>',
+                '<p><strong>Release:</strong> %s</p><p><strong>Size:</strong> %s</p><p><strong>Seeds:</strong> %d | <strong>Peers:</strong> %d</p><p><strong>Hash:</strong> <code>%s</code></p><p><a href="%s">Magnet Link</a> | <a href="%s">View on EZTV</a></p>',
                 htmlspecialchars($item->title, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
                 htmlspecialchars($item->formattedSize(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
                 $item->seeds,
                 $item->peers,
                 htmlspecialchars($item->hash, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
-                htmlspecialchars($item->magnetUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
+                $safeMagnetHref,
+                $safeEztvHref
             );
             $writer->startElement('description');
-            $writer->writeRaw($desc);
+            $writer->writeCdata($desc);
             $writer->endElement();
 
             $writer->endElement(); // item

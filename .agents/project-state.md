@@ -47,6 +47,12 @@
   - **Velocity**: 2 story points.
   - **Test Suite**: 31 unit & integration tests, 394 assertions, 100% green.
   - **Deployment**: Live on `code-alongsi.de:httpdocs/eztvxrss`. Tested and verified via curl and Puppeteer.
+- **Sprint 3 (2026-09-04)**:
+  - **Goal**: Fix RSS item links to point to canonical EZTV episode URLs and ensure magnet links are raw and unescaped (US-09).
+  - **Delivered**: US-09 (2 story points).
+  - **Velocity**: 2 story points.
+  - **Test Suite**: 34 unit & integration tests, 405 assertions, 100% green.
+  - **Deployment**: Live on `code-alongsi.de:httpdocs/eztvxrss`. Verified via curl and Puppeteer.
 
 ## Skipped Tests Log
 - None.

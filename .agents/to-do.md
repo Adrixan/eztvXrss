@@ -1,14 +1,14 @@
 # Sprint Backlog & To-Do: eztvXrss
 
-## Current Sprint: Sprint 2 — Show-Name Feed Title & Direct IMDb Lookup
-- **Sprint Goal**: Enhance feed titles and OPML entries to use show names with `[resolution | codec]` tags, looking up show names automatically from IMDb ID.
-- **Status**: Completed (2/2 story points delivered)
+## Current Sprint: Sprint 3 — Fix RSS Item Links to EZTV & Clean Magnet URIs
+- **Sprint Goal**: Point RSS item `<link>` and `<guid>` to canonical EZTV episode URLs, add `torrent:magnetURI`, and ensure magnet links are raw and fully functional.
+- **Velocity Target**: 2 story points
 
 ## Sprint Stories
 
-### [x] US-08: Dynamic Show-Name Feed Title with Filter Tags & IMDb Lookup (2 pts)
-- [x] Acceptance tests written (`tests/Unit/FeedTitleFormatterTest.php`, `tests/Unit/ShowSearchClientTest.php`, `tests/Unit/EndpointIntegrationTest.php`)
+### [x] US-09: Fix RSS Item Links to EZTV Site & Clean Magnet URIs (2 pts)
+- [x] Acceptance tests written (`tests/Unit/RssFeedBuilderTest.php`, `tests/Unit/TorrentItemTest.php`)
 - [x] Implementation complete (all tests green)
-- [x] Regression suite green (31 tests, 394 assertions)
+- [x] Regression suite green (34 tests, 405 assertions)
 - [x] Production deployment & live verification on code-alongsi.de
-- [x] User review: approved
+- [x] User review: ready for acceptance

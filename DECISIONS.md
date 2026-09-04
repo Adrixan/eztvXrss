@@ -31,3 +31,10 @@
 **Why:** TVMaze lookup gives the clean, canonical show name with punctuation (`Star Trek: Strange New Worlds`), while release string parsing guarantees a reliable offline/fallback title even if TVMaze is unreachable.
 **Trade-offs:** Adds one lightweight HTTP call during feed generation if show title is not supplied via parameter.
 **Revisit if:** Latency of show lookup impacts feed generation speed.
+
+## 2026-09-04 — RSS Item Links & BitTorrent Magnet Syndication Format
+**Chosen:** Item `<link>` and `<guid>` elements must point to the canonical EZTV episode webpage (`https://eztvx.to/ep/{id}/{slug}/`). BitTorrent magnet links are provided via standard `xmlns:torrent="http://xmlns.ezrss.it/0.1/"` `<torrent:magnetURI>`, RSS enclosure `<enclosure url="magnet:?..." length="..." type="application/x-bittorrent" />`, and raw unescaped `&` parameter delimiters inside `<description>` CDATA.
+**Alternatives:** Setting item `<link>` to `magnet:?...`.
+**Why:** In RSS specifications and readers, `<link>` represents the HTML web page of the entry. When set to a non-HTTP scheme like `magnet:`, browsers and readers misinterpret it as a relative URL and prepend the current website's base URL (e.g., `https://code-alongsi.de/eztvxrss/magnet:?...`), resulting in broken 404 links. Setting `<link>` to `https://eztvx.to/ep/...` ensures clicking the item opens its EZTV website page as requested, while `torrent:magnetURI` and `<enclosure>` provide dedicated, standard BitTorrent client ingestion.
+**Trade-offs:** Users clicking the item title go to the web page instead of triggering their torrent client directly from the title, but this is the standard behavior in RSS and prevents URL corruption. Direct magnet links remain available in enclosures and descriptions.
+**Revisit if:** BitTorrent client software changes its RSS enclosure parsing standard.

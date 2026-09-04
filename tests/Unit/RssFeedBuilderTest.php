@@ -60,18 +60,31 @@ final class RssFeedBuilderTest extends TestCase
         $title = $firstItem->getElementsByTagName('title')->item(0)?->nodeValue;
         $this->assertNotEmpty($title);
 
+        $link = $firstItem->getElementsByTagName('link')->item(0)?->nodeValue;
+        $this->assertNotEmpty($link);
+        $this->assertStringStartsWith('https://eztvx.to/ep/', $link, 'Item link must point to eztvx.to episode page');
+
         $guid = $firstItem->getElementsByTagName('guid')->item(0)?->nodeValue;
         $this->assertNotEmpty($guid);
+        $this->assertStringStartsWith('https://eztvx.to/ep/', $guid, 'Item guid must point to eztvx.to episode page');
 
         $pubDate = $firstItem->getElementsByTagName('pubDate')->item(0)?->nodeValue;
         $this->assertNotEmpty($pubDate);
         $this->assertNotFalse(strtotime($pubDate));
+
+        $magnetUris = $firstItem->getElementsByTagNameNS('http://xmlns.ezrss.it/0.1/', 'magnetURI');
+        $this->assertSame(1, $magnetUris->length, 'Must have torrent:magnetURI element');
+        $this->assertStringStartsWith('magnet:?', $magnetUris->item(0)?->nodeValue ?? '');
 
         $enclosure = $firstItem->getElementsByTagName('enclosure')->item(0);
         $this->assertNotNull($enclosure);
         $this->assertSame('application/x-bittorrent', $enclosure->getAttribute('type'));
         $this->assertStringStartsWith('magnet:?', $enclosure->getAttribute('url'));
         $this->assertGreaterThan(0, (int) $enclosure->getAttribute('length'));
+
+        $desc = $firstItem->getElementsByTagName('description')->item(0)?->nodeValue ?? '';
+        $this->assertStringContainsString('https://eztvx.to/ep/', $desc);
+        $this->assertMatchesRegularExpression('/href="magnet:\?xt=[^"]+&dn=[^"]+"/', $desc, 'Magnet href in CDATA must use raw & parameter delimiters');
     }
 
     public function testBuildEscapesXmlEntitiesInSpecialCharacters(): void

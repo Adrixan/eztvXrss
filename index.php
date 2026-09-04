@@ -572,7 +572,9 @@ $initialSource = htmlspecialchars((string) ($_GET['source'] ?? 'any'), ENT_QUOTE
               const tr = document.createElement('tr');
               tr.innerHTML = `
                 <td style="word-break: break-word; font-weight: 500;">
-                  ${item.title}
+                  <a href="${item.eztv_url || '#'}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;" title="View episode on EZTV">
+                    ${item.title}
+                  </a>
                 </td>
                 <td style="white-space: nowrap;"><span class="badge">${item.size}</span></td>
                 <td style="white-space: nowrap;">
@@ -581,9 +583,10 @@ $initialSource = htmlspecialchars((string) ($_GET['source'] ?? 'any'), ENT_QUOTE
                 </td>
                 <td style="white-space: nowrap; font-size: 0.85rem; color: var(--text-muted);">${item.released}</td>
                 <td style="white-space: nowrap;">
-                  <a href="${item.magnet}" class="btn btn-secondary btn-preset" title="Open Magnet Link">
+                  <a href="${item.magnet}" class="btn btn-secondary btn-preset" title="Open Magnet Link" style="margin-right: 4px;">
                     Magnet
                   </a>
+                  ${item.eztv_url ? `<a href="${item.eztv_url}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-preset" title="View on EZTV">EZTV ↗</a>` : ''}
                 </td>
               `;
               previewTableBody.appendChild(tr);
